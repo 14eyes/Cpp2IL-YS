@@ -95,6 +95,8 @@ namespace LibCpp2IL.Metadata
                     actualVersion = 24.15f; //2018.4.34 made a tiny little change which just removes HashValueIndex from AssemblyNameDefinition
                 else if (unityVersion.IsGreaterEqual(2018, 3))
                     actualVersion = 24.1f; //2018.3.0 introduces v24.1
+                else if (unityVersion.IsGreaterEqual(2017, 4,30))
+                    actualVersion = 24.6f; //non existant GI ver.
                 else
                     actualVersion = version; //2017.1.0 was the first v24 version
             }
@@ -276,6 +278,8 @@ namespace LibCpp2IL.Metadata
 
         private void DecipherMetadataUsage()
         {
+            if (metadataUsageLists.Count() == 0)
+                return;
             metadataUsageDic = new Dictionary<uint, SortedDictionary<uint, uint>>();
             for (var i = 1u; i <= 6u; i++)
             {
