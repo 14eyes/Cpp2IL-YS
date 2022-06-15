@@ -96,7 +96,7 @@ namespace LibCpp2IL.Metadata
                 else if (unityVersion.IsGreaterEqual(2018, 3))
                     actualVersion = 24.1f; //2018.3.0 introduces v24.1
                 else if (unityVersion.IsGreaterEqual(2017, 4,30))
-                    actualVersion = 24.6f; //non existant GI ver.
+                    actualVersion = 24.5f; //detected ys pog
                 else
                     actualVersion = version; //2017.1.0 was the first v24 version
             }
