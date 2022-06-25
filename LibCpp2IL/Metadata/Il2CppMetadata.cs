@@ -275,17 +275,31 @@ namespace LibCpp2IL.Metadata
         {
             return ReadClassArrayAtRawAddr<T>(offset, length / LibCpp2ILUtils.VersionAwareSizeOf(typeof(T), downsize: false));
         }
+        private void DecipherGenshinMetadataUsage()
+        {
+            var metadataUsagesCount = metadataUsagePairs.Length;
+            for (int i = 0; i < metadataUsagesCount; i++)
+            {
+                var metadataUsagePair = metadataUsagePairs[i];
+                var usage = GetEncodedIndexType(metadataUsagePair.encodedSourceIndex);
+                var decodedIndex = GetDecodedMethodIndex(metadataUsagePair.encodedSourceIndex);
+                metadataUsageDic[usage][metadataUsagePair.destinationIndex] = decodedIndex;
+            }
+        }
 
         private void DecipherMetadataUsage()
         {
-            if (metadataUsageLists.Count() == 0)
-                return;
             metadataUsageDic = new Dictionary<uint, SortedDictionary<uint, uint>>();
             for (var i = 1u; i <= 6u; i++)
             {
                 metadataUsageDic[i] = new SortedDictionary<uint, uint>();
             }
 
+            if (metadataUsageLists.Length == 0)
+            {
+                DecipherGenshinMetadataUsage();
+                return;
+            }
             foreach (var metadataUsageList in metadataUsageLists)
             {
                 for (var i = 0; i < metadataUsageList.count; i++)
@@ -298,7 +312,7 @@ namespace LibCpp2IL.Metadata
                 }
             }
 
-            maxMetadataUsages = metadataUsageDic.Max(x => x.Value.Max(y => y.Key)) + 1;
+            maxMetadataUsages = metadataUsageDic.Max(x => x.Value.Select(y => y.Key).DefaultIfEmpty().Max()) + 1;
         }
 
         private uint GetEncodedIndexType(uint index)
