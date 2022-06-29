@@ -106,7 +106,8 @@ namespace LibCpp2IL.Metadata
                 else if (unityVersion.IsGreaterEqual(2018, 3))
                     actualVersion = 24.1f; //2018.3.0 introduces v24.1
                 else if (unityVersion.IsGreaterEqual(2017, 4, 30))
-                    actualVersion = 24.5f; //detected ys pog
+                    actualVersion = 24.6f; //detected ys pog
+                // 24.6 doesnt exist but i use it to identify genshin
                 else
                     actualVersion = version; //2017.1.0 was the first v24 version
             }
@@ -354,7 +355,7 @@ namespace LibCpp2IL.Metadata
                 var metadataUsagePair = metadataUsagePairs[i];
                 var usage = GetEncodedIndexType(metadataUsagePair.encodedSourceIndex);
                 var decodedIndex = GetDecodedMethodIndex(metadataUsagePair.encodedSourceIndex);
-                metadataUsageDic[usage][metadataUsagePair.destinationIndex] = decodedIndex;
+                metadataUsageDic![usage][metadataUsagePair.destinationIndex] = decodedIndex;
             }
         }
         private void DecipherMetadataUsage()
@@ -720,22 +721,22 @@ namespace LibCpp2IL.Metadata
             parameterStart = reader.ReadInt32();
 
 
+            genericContainerIndex = reader.ReadInt32();
             if (IsAtMost(24.4f))
             {
                 customAttributeIndex = reader.ReadInt32();
                 _ = reader.ReadInt32(); //reversePInvokeWrapperIndex
             }
 
-            genericContainerIndex = reader.ReadInt32();
             filler20 = reader.ReadInt32();
 
             if (IsAtMost(24.4f))
             {
                 methodIndex = reader.ReadInt32();
                 invokerIndex = reader.ReadInt32();
-                delegateWrapperIndex = reader.ReadInt32();
-                rgctxStartIndex = reader.ReadInt32();
+                //delegateWrapperIndex = reader.ReadInt32();
                 rgctxCount = reader.ReadInt32();
+                rgctxStartIndex = reader.ReadInt32();
             }
 
 

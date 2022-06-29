@@ -12,16 +12,16 @@ namespace LibCpp2IL.BinaryStructures
         public ulong genericMethodPointers;
 
         //Present in v27.1 and v24.5, but not v27.0
-        [Version(Min = 27.1f)] [Version(Min = 24.5f, Max = 24.5f)]
+        [Version(Min = 27.1f)] [Version(Min = 24.5f, Max = 24.6f)]
         public ulong genericAdjustorThunks;
 
         public ulong invokerPointersCount;
         public ulong invokerPointers;
 
-        [Version(Max = 24.5f)] //Removed in v27
+        [Version(Max = 24.6f)] //Removed in v27
         public ulong customAttributeCount;
 
-        [Version(Max = 24.5f)] //Removed in v27
+        [Version(Max = 24.6f)] //Removed in v27
         public ulong customAttributeGeneratorListAddress;
 
         public ulong unresolvedVirtualCallCount; //Renamed to unresolvedIndirectCallCount in v29.1
@@ -61,7 +61,7 @@ namespace LibCpp2IL.BinaryStructures
             invokerPointersCount = reader.ReadNUint();
             invokerPointers = reader.ReadNUint();
 
-            if (IsAtMost(24.5f))
+            if (IsAtMost(24.6f))
             {
                 customAttributeCount = reader.ReadNUint();
                 customAttributeGeneratorListAddress = reader.ReadNUint();
