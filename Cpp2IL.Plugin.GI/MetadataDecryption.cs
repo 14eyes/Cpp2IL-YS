@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LibCpp2IL
+namespace Cpp2IL.Plugin.GI
 {
     public class Decrypter
     {
