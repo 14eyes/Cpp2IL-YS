@@ -13,7 +13,7 @@ namespace LibCpp2IL.Metadata
         [Version(Max = 24)] public int CustomAttributeIndex;
         public int ByvalTypeIndex;
 
-        [Version(Max = 24.6f)] //Removed in v27 
+        [Version(Max = 24.5f)] //Removed in v27 
         public int ByrefTypeIndex;
 
         public int DeclaringTypeIndex;
