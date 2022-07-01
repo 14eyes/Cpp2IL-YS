@@ -105,9 +105,6 @@ namespace LibCpp2IL.Metadata
                     actualVersion = 24.15f; //2018.4.34 made a tiny little change which just removes HashValueIndex from AssemblyNameDefinition
                 else if (unityVersion.IsGreaterEqual(2018, 3))
                     actualVersion = 24.1f; //2018.3.0 introduces v24.1
-                else if (unityVersion.IsGreaterEqual(2017, 4, 30))
-                    actualVersion = 24.6f; //detected ys pog
-                // 24.6 doesnt exist but i use it to identify genshin
                 else
                     actualVersion = version; //2017.1.0 was the first v24 version
             }
@@ -496,16 +493,38 @@ namespace LibCpp2IL.Metadata
     public class Il2CppGlobalMetadataHeaderMihoyo : Il2CppGlobalMetadataHeader
     {
 
+        public int filler00;
+        public int filler04;
+        public int filler08;
+        public int filler0C;
+        public int filler10;
+        public int filler14;
+        public int filler58;
+        public int filler5C;
+        public int filler60;
+        public int filler64;
+        public int filler68;
+        public int filler6C;
+        public int fillerF0;
+        public int fillerF4;
+        public int filler100;
+        public int filler104;
+        public int filler108;
+        public int filler10C;
+        public int filler140;
+        public int filler144;
+        public int filler148;
+        public int filler14C;
         public override void Read(ClassReadingBinaryReader reader)
         {
             magicNumber = 0xFAB11BAF;
             version = 24;
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
+            filler00 = reader.ReadInt32();
+            filler04 = reader.ReadInt32();
+            filler08 = reader.ReadInt32();
+            filler0C = reader.ReadInt32();
+            filler10 = reader.ReadInt32();
+            filler14 = reader.ReadInt32();
             stringLiteralDataOffset = reader.ReadInt32();
             stringLiteralDataCount = reader.ReadInt32();
             stringLiteralOffset = reader.ReadInt32();
@@ -529,13 +548,13 @@ namespace LibCpp2IL.Metadata
             }
             else
             {
-                _ = reader.ReadInt32();
-                _ = reader.ReadInt32();
+                filler58 = reader.ReadInt32();
+                filler5C = reader.ReadInt32();
             }
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
+            filler60 = reader.ReadInt32();
+            filler64 = reader.ReadInt32();
+            filler68 = reader.ReadInt32();
+            filler6C = reader.ReadInt32();
             imagesOffset = reader.ReadInt32();
             imagesCount = reader.ReadInt32();
             assembliesOffset = reader.ReadInt32();
@@ -568,14 +587,14 @@ namespace LibCpp2IL.Metadata
             parametersCount = reader.ReadInt32();
             genericParameterConstraintsOffset = reader.ReadInt32();
             genericParameterConstraintsCount = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
+            fillerF0 = reader.ReadInt32();
+            fillerF4 = reader.ReadInt32();
             metadataUsagePairsOffset = reader.ReadInt32();
             metadataUsagePairsCount = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
+            filler100 = reader.ReadInt32();
+            filler104 = reader.ReadInt32();
+            filler108 = reader.ReadInt32();
+            filler10C = reader.ReadInt32();
             fieldRefsOffset = reader.ReadInt32();
             fieldRefsCount = reader.ReadInt32();
             eventsOffset = reader.ReadInt32();
@@ -588,10 +607,10 @@ namespace LibCpp2IL.Metadata
             parameterDefaultValuesCount = reader.ReadInt32();
             fieldDefaultValuesOffset = reader.ReadInt32();
             fieldDefaultValuesCount = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
-            _ = reader.ReadInt32();
+            filler140 = reader.ReadInt32();
+            filler144 = reader.ReadInt32();
+            filler148 = reader.ReadInt32();
+            filler14C = reader.ReadInt32();
             metadataUsageListsOffset = reader.ReadInt32();
             metadataUsageListsCount = reader.ReadInt32();
         }
@@ -654,6 +673,8 @@ namespace LibCpp2IL.Metadata
     }
     public class Il2CppPropertyDefinitionMihoyo : Il2CppPropertyDefinition
     {
+        public int filler08;
+        public int filler14;
         public override void Read(ClassReadingBinaryReader reader)
         {
             if (IsAtMost(24.4f))
@@ -665,10 +686,10 @@ namespace LibCpp2IL.Metadata
             Name = ((Il2CppMetadata)reader).ReadStringFromIndexNoReadLock(nameIndex);
             reader.Position = pos;
 
-            _ = reader.ReadInt32();
+            filler08 = reader.ReadInt32();
             token = reader.ReadUInt32();
             attrs = reader.ReadUInt32();
-            _ = reader.ReadInt32();
+            filler14 = reader.ReadInt32();
             set = reader.ReadInt32();
             get = reader.ReadInt32();
 
@@ -677,11 +698,14 @@ namespace LibCpp2IL.Metadata
     };
     public class Il2CppMethodDefinitionMihoyo : Il2CppMethodDefinition
     {
+        public int filler08;
+        public int filler20;
+        public int filler;
         public override void Read(ClassReadingBinaryReader reader)
         {
             returnTypeIdx = reader.ReadInt32();
             declaringTypeIdx = reader.ReadInt32();
-            _ = reader.ReadInt32();
+            filler08 = reader.ReadInt32();
             nameIndex = reader.ReadInt32();
             //Cache name now
             var pos = reader.Position;
@@ -694,18 +718,18 @@ namespace LibCpp2IL.Metadata
             if (IsAtMost(24.4f))
             {
                 customAttributeIndex = reader.ReadInt32();
-                _ = reader.ReadInt32(); //reversePInvokeWrapperIndex
+                filler = reader.ReadInt32(); //reversePInvokeWrapperIndex
             }
 
-            _ = reader.ReadInt32();
 
+            filler20 = reader.ReadInt32();
             if (IsAtMost(24.4f))
             {
                 methodIndex = reader.ReadInt32();
                 invokerIndex = reader.ReadInt32();
-                //delegateWrapperIndex = reader.ReadInt32();
-                rgctxCount = reader.ReadInt32();
+                delegateWrapperIndex = reader.ReadInt32();
                 rgctxStartIndex = reader.ReadInt32();
+                rgctxCount = reader.ReadInt32();
             }
 
 

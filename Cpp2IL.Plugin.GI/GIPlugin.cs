@@ -39,7 +39,7 @@ public class GIPlugin : Cpp2IlPlugin
         }
 
         var gameDataPath = Path.Combine(gamePath, $"{exeName}_Data");
-        var uv = Cpp2IlApi.DetermineUnityVersion(unityPlayerPath, gameDataPath);
+        var uv = UnityVersion.Parse("2019.4.21");//Cpp2IlApi.DetermineUnityVersion(unityPlayerPath, gameDataPath);
         Logger.VerboseNewline($"First-attempt unity version detection gave: {uv}");
 
         if (uv == default)
