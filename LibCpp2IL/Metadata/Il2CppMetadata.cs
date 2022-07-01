@@ -485,7 +485,7 @@ namespace LibCpp2IL.Metadata
         }
     }
     ///NOTE: 
-    /// I wanted to make a loader plugin for this but thats not supported atm
+    /// I wanted add this to the loader plugin but thats not supported atm
     ///TODO:
     /// - Test <2.7 metadata
     /// - Move to a new file
