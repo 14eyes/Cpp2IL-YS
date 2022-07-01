@@ -31,16 +31,23 @@ namespace Cpp2IL
         {
             if (string.IsNullOrEmpty(gamePath))
                 throw new SoftException("No force options provided, and no game path was provided either. Please provide a game path or use the --force- options.");
-
-            if (Directory.Exists(gamePath))
-                HandleWindowsGamePath(gamePath, inputExeName, ref args);
-            else if (File.Exists(gamePath) && Path.GetExtension(gamePath).ToLowerInvariant() == ".apk")
-                HandleSingleApk(gamePath, ref args);
-            else if (File.Exists(gamePath) && Path.GetExtension(gamePath).ToLowerInvariant() == ".xapk")
-                HandleXapk(gamePath, ref args);
-            else
+            try
             {
-                if(!Cpp2IlPluginManager.TryProcessGamePath(gamePath, ref args))
+                if (Directory.Exists(gamePath))
+                    HandleWindowsGamePath(gamePath, inputExeName, ref args);
+                else if (File.Exists(gamePath) && Path.GetExtension(gamePath).ToLowerInvariant() == ".apk")
+                    HandleSingleApk(gamePath, ref args);
+                else if (File.Exists(gamePath) && Path.GetExtension(gamePath).ToLowerInvariant() == ".xapk")
+                    HandleXapk(gamePath, ref args);
+                else
+                {
+                    if (!Cpp2IlPluginManager.TryProcessGamePath(gamePath, ref args))
+                        throw new SoftException($"Could not find a valid unity game at {gamePath}");
+                }
+            }
+            catch
+            {
+                if (!Cpp2IlPluginManager.TryProcessGamePath(gamePath, ref args))
                     throw new SoftException($"Could not find a valid unity game at {gamePath}");
             }
         }
@@ -256,7 +263,7 @@ namespace Cpp2IL
                 //Version or help requested
                 Environment.Exit(0);
 
-            if (parserResult is not Parsed<CommandLineArgs> {Value: { } options})
+            if (parserResult is not Parsed<CommandLineArgs> { Value: { } options })
                 throw new SoftException("Failed to parse command line arguments");
 
             ConsoleLogger.ShowVerbose = options.Verbose;
@@ -389,7 +396,7 @@ namespace Cpp2IL
                 throw new SoftException("Arguments have Valid = false");
 
             var executionStart = DateTime.Now;
-            
+
             runtimeArgs.OutputFormat?.OnOutputFormatSelected();
 
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
@@ -458,7 +465,7 @@ namespace Cpp2IL
             // Cpp2IlApi.PopulateConcreteImplementations();
 
             CleanupExtractedFiles();
-            
+
             Cpp2IlPluginManager.CallOnFinish();
 
             Logger.InfoNewline($"Done. Total execution time: {(DateTime.Now - executionStart).TotalMilliseconds}ms");
