@@ -700,7 +700,6 @@ namespace LibCpp2IL.Metadata
     {
         public int filler08;
         public int filler20;
-        public int filler;
         public override void Read(ClassReadingBinaryReader reader)
         {
             returnTypeIdx = reader.ReadInt32();
@@ -718,7 +717,7 @@ namespace LibCpp2IL.Metadata
             if (IsAtMost(24.4f))
             {
                 customAttributeIndex = reader.ReadInt32();
-                filler = reader.ReadInt32(); //reversePInvokeWrapperIndex
+                _ = reader.ReadInt32(); //reversePInvokeWrapperIndex
             }
 
 
