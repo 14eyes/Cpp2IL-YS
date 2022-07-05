@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Cpp2IL.Core.Api;
+using Cpp2IL.Core.Logging;
 using Cpp2IL.Core.Model.Contexts;
 using LibCpp2IL;
 using StableNameDotNet;
@@ -16,13 +18,30 @@ public class StableRenamingProcessingLayer : Cpp2IlProcessingLayer
     public override string Name => "Stable (Unhollower-Style) Renaming";
     public override string Id => "stablenamer";
     
+    private DeobfuscationMapProcessingLayer? _deobfuscationMapProcessingLayer;
+
+    public override void PreProcess(ApplicationAnalysisContext context, List<Cpp2IlProcessingLayer> layers)
+    {
+        for (var i = 0; i < layers.Count; i++)
+        {
+            if (layers[i] is not DeobfuscationMapProcessingLayer deobf)
+                continue;
+            
+            //Save this for manual invocation later
+            Logger.InfoNewline("Found DeobfuscationMapProcessingLayer. It will be run at the correct time", "StableRenamingProcessingLayer");
+            _deobfuscationMapProcessingLayer = deobf;
+            layers.RemoveAt(i);
+            return;
+        }
+    }
+
     public override void Process(ApplicationAnalysisContext appContext, Action<int, int>? progressCallback = null)
     {
         var stableNameStemCounts = new Dictionary<string, int>();
 
         var typesToProcess = appContext.AllTypes.Where(t => t is not InjectedTypeAnalysisContext).ToArray();
         
-        //Initial pass through, to find which can be renamed trivially
+        //Initial pass through, to find types which can be renamed trivially
         foreach (var typeAnalysisContext in typesToProcess)
         {
             var stableName = StableNameGenerator.GetStableNameForTypeIfNeeded(typeAnalysisContext, false);
@@ -96,6 +115,82 @@ public class StableRenamingProcessingLayer : Cpp2IlProcessingLayer
 
             if (backTickSuffix != null)
                 typeAnalysisContext.OverrideName += backTickSuffix;
+        }
+        
+        //Now rename enum values
+        foreach (var type in typesToProcess)
+        {
+            if(!type.IsEnumType)
+                continue;
+            
+            //All static fields
+            foreach (var field in type.Fields)
+            {
+                if(!field.IsStatic || !field.Attributes.HasFlag(FieldAttributes.HasDefault))
+                    continue;
+                
+                if(!StableNameGenerator.IsObfuscated(field.Name))
+                    continue;
+
+                field.OverrideName = $"EnumValue" + field.BackingData!.DefaultValue;
+            }
+        }
+        
+        //If the user wants to rename types using a deobfuscation map, do that now
+        if (_deobfuscationMapProcessingLayer != null)
+        {
+            Logger.InfoNewline("Running Deobfuscation Map Processing Layer Now...", "StableRenamingProcessingLayer");
+            _deobfuscationMapProcessingLayer.Process(appContext);
+            Logger.InfoNewline("Deobfuscation Map Processing Layer Finished.", "StableRenamingProcessingLayer");
+        }
+
+        //Now (post deobf), rename all methods
+        foreach (var typeAnalysisContext in typesToProcess)
+        { 
+            var typeMethodNames = new Dictionary<string, int>();
+            foreach (var methodAnalysisContext in typeAnalysisContext.Methods)
+            {
+                if(methodAnalysisContext is InjectedMethodAnalysisContext)
+                    continue;
+                
+                var stableName = StableNameGenerator.GetStableNameForMethodIfNeeded(methodAnalysisContext);
+
+                if (stableName == null)
+                    //No rename needed
+                    continue;
+
+                var occurenceCount = typeMethodNames.GetOrCreate(stableName, () => 0);
+                typeMethodNames[stableName]++;
+                methodAnalysisContext.OverrideName = $"{stableName}_{occurenceCount}";
+                
+                //If renaming a method, also rename its params
+                for (var i = 0; i < methodAnalysisContext.Parameters.Count; i++)
+                {
+                    var param = methodAnalysisContext.Parameters[i];
+                    param.OverrideName = $"param_{i}";
+                }
+            }
+        }
+        
+        //Finally, rename all fields
+        foreach (var typeAnalysisContext in typesToProcess)
+        {
+            var typeFieldNames = new Dictionary<string, int>();
+            foreach (var fieldAnalysisContext in typeAnalysisContext.Fields)
+            {
+                if(fieldAnalysisContext is InjectedFieldAnalysisContext)
+                    continue;
+                
+                var stableName = StableNameGenerator.GetStableNameForFieldIfNeeded(fieldAnalysisContext);
+
+                if (stableName == null)
+                    //No rename needed
+                    continue;
+
+                var occurenceCount = typeFieldNames.GetOrCreate(stableName, () => 0);
+                typeFieldNames[stableName]++;
+                fieldAnalysisContext.OverrideName = $"{stableName}_{occurenceCount}";
+            }
         }
     }
 }

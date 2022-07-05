@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using AsmResolver;
 using AsmResolver.DotNet;
@@ -30,7 +31,7 @@ public static class AsmResolverAssemblyPopulator
             var importer = typeDefinition.Module!.Assembly!.GetImporter();
 
             //Type generic params.
-            if (il2CppTypeDef != null)
+            if (il2CppTypeDef != null) 
                 PopulateGenericParamsForType(il2CppTypeDef, typeDefinition);
 
             //Set base type
@@ -58,6 +59,9 @@ public static class AsmResolverAssemblyPopulator
 
         foreach (var param in cppTypeDefinition.GenericContainer.GenericParameters)
         {
+            // if(parentParams.Any(p => p.Name == param.Name))
+            //     continue;
+            
             if (!AsmResolverUtils.GenericParamsByIndexNew.TryGetValue(param.Index, out var p))
             {
                 p = new GenericParameter(param.Name, (GenericParameterAttributes) param.flags);

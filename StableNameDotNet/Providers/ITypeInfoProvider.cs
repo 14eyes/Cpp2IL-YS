@@ -5,6 +5,7 @@ namespace StableNameDotNet.Providers;
 
 public interface ITypeInfoProvider
 {
+    public ITypeInfoProvider? DeclaringTypeInfoProvider { get; }
     /// <summary>
     /// Get the names of the base types for this type, in order. This should probably be a yielding function which returns each base type, one at a time (starting with the base type of this type,
     /// then the base type of that, etc.).
@@ -24,7 +25,10 @@ public interface ITypeInfoProvider
     /// <summary>
     /// Returns the name of this type. If this type is generic, this should not include the generic arguments, but can include the backtick. If this type is an array, this should not include the array dimensions.
     /// </summary>
-    public string TypeName { get; }
+    public string OriginalTypeName { get; }
+    public string RewrittenTypeName { get; }
+    
+    public string TypeNamespace { get; }
     
     /// <summary>
     /// Return true if this type is a generic instance - that is, a type with generic parameters *which has all of its generic parameters filled in*.

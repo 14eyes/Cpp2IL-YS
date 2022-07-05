@@ -16,10 +16,18 @@ public class AttributeInjectorProcessingLayer : Cpp2IlProcessingLayer
     public override string Name => "Attribute Injector";
     public override string Id => "attributeinjector";
 
+    private static bool _useEzDiffMode;
+
     public override void Process(ApplicationAnalysisContext appContext, Action<int, int>? progressCallback = null)
     {
+        //EZ diff mode removes token attributes and method address/rva fields to make diffing using e.g. git easier
+        _useEzDiffMode = appContext.GetExtraData<string>("attr-injector-use-ez-diff") != null;
+
         InjectAttributeAttribute(appContext);
-        InjectTokenAttribute(appContext);
+        
+        if (!_useEzDiffMode) 
+            InjectTokenAttribute(appContext);
+
         InjectAddressAttribute(appContext);
         InjectFieldOffsetAttribute(appContext);
     }
@@ -58,6 +66,7 @@ public class AttributeInjectorProcessingLayer : Cpp2IlProcessingLayer
 
         var rvaFields = addressAttributes.InjectFieldToAllAssemblies("RVA", appContext.SystemTypes.SystemStringType, FieldAttributes.Public);
         var offsetFields = addressAttributes.InjectFieldToAllAssemblies("Offset", appContext.SystemTypes.SystemStringType, FieldAttributes.Public);
+        var lengthFields = addressAttributes.InjectFieldToAllAssemblies("Length", appContext.SystemTypes.SystemStringType, FieldAttributes.Public);
 
         var addressConstructors = addressAttributes.InjectConstructor(false);
 
@@ -65,6 +74,7 @@ public class AttributeInjectorProcessingLayer : Cpp2IlProcessingLayer
         {
             var rvaField = rvaFields[assemblyAnalysisContext];
             var offsetField = offsetFields[assemblyAnalysisContext];
+            var lengthField = lengthFields[assemblyAnalysisContext];
 
             var addressConstructor = addressConstructors[assemblyAnalysisContext];
 
@@ -74,9 +84,15 @@ public class AttributeInjectorProcessingLayer : Cpp2IlProcessingLayer
                     continue;
 
                 var newAttribute = new AnalyzedCustomAttribute(addressConstructor);
-                newAttribute.Fields.Add(new(rvaField, new CustomAttributePrimitiveParameter($"0x{m.Definition.Rva:X}")));
-                if (appContext.Binary.TryMapVirtualAddressToRaw(m.UnderlyingPointer, out var offset))
-                    newAttribute.Fields.Add(new(offsetField, new CustomAttributePrimitiveParameter($"0x{offset:X}")));
+
+                if (!_useEzDiffMode)
+                {
+                    newAttribute.Fields.Add(new(rvaField, new CustomAttributePrimitiveParameter($"0x{m.Definition.Rva:X}")));
+                    if (appContext.Binary.TryMapVirtualAddressToRaw(m.UnderlyingPointer, out var offset))
+                        newAttribute.Fields.Add(new(offsetField, new CustomAttributePrimitiveParameter($"0x{offset:X}")));
+                }
+
+                newAttribute.Fields.Add(new(lengthField, new CustomAttributePrimitiveParameter($"0x{m.RawBytes.Length:X}")));
                 m.CustomAttributes.Add(newAttribute);
             }
         }
@@ -166,10 +182,15 @@ public class AttributeInjectorProcessingLayer : Cpp2IlProcessingLayer
 
     private static void ProcessCustomAttributesForContext(HasCustomAttributes context, FieldAnalysisContext nameField, FieldAnalysisContext rvaField, FieldAnalysisContext offsetField, MethodAnalysisContext ctor)
     {
-        context.AnalyzeCustomAttributeData();
+        if (_useEzDiffMode)
+            context.CustomAttributes = new();
+        else
+        {
+            context.AnalyzeCustomAttributeData(false);
 
-        if (context.CustomAttributes == null)
-            return;
+            if (context.CustomAttributes == null)
+                return;
+        }
 
         for (var index = 0; index < context.CustomAttributes.Count; index++)
         {
