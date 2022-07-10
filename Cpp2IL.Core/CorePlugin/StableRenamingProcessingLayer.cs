@@ -154,6 +154,15 @@ public class StableRenamingProcessingLayer : Cpp2IlProcessingLayer
                     continue;
                 
                 var stableName = StableNameGenerator.GetStableNameForMethodIfNeeded(methodAnalysisContext);
+                
+                //Params first
+                for (var i = 0; i < methodAnalysisContext.Parameters.Count; i++)
+                {
+                    var param = methodAnalysisContext.Parameters[i];
+                    
+                    if(StableNameGenerator.IsObfuscated(param.Name))
+                        param.OverrideName = $"param_{i}";
+                }
 
                 if (stableName == null)
                     //No rename needed
@@ -162,17 +171,10 @@ public class StableRenamingProcessingLayer : Cpp2IlProcessingLayer
                 var occurenceCount = typeMethodNames.GetOrCreate(stableName, () => 0);
                 typeMethodNames[stableName]++;
                 methodAnalysisContext.OverrideName = $"{stableName}_{occurenceCount}";
-                
-                //If renaming a method, also rename its params
-                for (var i = 0; i < methodAnalysisContext.Parameters.Count; i++)
-                {
-                    var param = methodAnalysisContext.Parameters[i];
-                    param.OverrideName = $"param_{i}";
-                }
             }
         }
         
-        //Finally, rename all fields
+        //Rename all fields
         foreach (var typeAnalysisContext in typesToProcess)
         {
             var typeFieldNames = new Dictionary<string, int>();
@@ -190,6 +192,42 @@ public class StableRenamingProcessingLayer : Cpp2IlProcessingLayer
                 var occurenceCount = typeFieldNames.GetOrCreate(stableName, () => 0);
                 typeFieldNames[stableName]++;
                 fieldAnalysisContext.OverrideName = $"{stableName}_{occurenceCount}";
+            }
+        }
+        
+        //Rename all props
+        foreach (var typeAnalysisContext in typesToProcess)
+        {
+            var typePropNames = new Dictionary<string, int>();
+            foreach (var propAnalysisContext in typeAnalysisContext.Properties)
+            {
+                var stableName = StableNameGenerator.GetStableNameForPropertyIfNeeded(propAnalysisContext);
+
+                if (stableName == null)
+                    //No rename needed
+                    continue;
+
+                var occurenceCount = typePropNames.GetOrCreate(stableName, () => 0);
+                typePropNames[stableName]++;
+                propAnalysisContext.OverrideName = $"{stableName}_{occurenceCount}";
+            }
+        }
+        
+        //Rename all events. This isn't done by unhollower because it doesn't generate events, but it's arguably useful
+        foreach (var typeAnalysisContext in typesToProcess)
+        {
+            var typeEventNames = new Dictionary<string, int>();
+            foreach (var eventAnalysisContext in typeAnalysisContext.Events)
+            {
+                var stableName = StableNameGenerator.GetStableNameForEventIfNeeded(eventAnalysisContext);
+
+                if (stableName == null)
+                    //No rename needed
+                    continue;
+
+                var occurenceCount = typeEventNames.GetOrCreate(stableName, () => 0);
+                typeEventNames[stableName]++;
+                eventAnalysisContext.OverrideName = $"{stableName}_{occurenceCount}";
             }
         }
     }

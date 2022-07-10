@@ -312,10 +312,10 @@ namespace Cpp2IL.Core.Utils
         {
             // var pointers = new ulong[] {0x52e6ba0, 0x52ad3a0, 0x11b09714, 0x40a990c, 0xd172c68, 0xa2c0514, 0x35ea45c, 0x1fc43208};
 
-            var methodsSortedByPointer = LibCpp2IlMain.TheMetadata.methodDefs.ToList();
+            var methodsSortedByPointer = LibCpp2IlMain.TheMetadata!.methodDefs.ToList();
             methodsSortedByPointer.SortByExtractedKey(m => m.MethodPointer);
 
-            var genericMethodsSortedByPointer = LibCpp2IlMain.Binary.ConcreteGenericImplementationsByAddress.ToList();
+            var genericMethodsSortedByPointer = LibCpp2IlMain.Binary!.ConcreteGenericImplementationsByAddress.ToList();
             genericMethodsSortedByPointer.SortByExtractedKey(m => m.Key);
 
             var stack = pointers.Select(p =>
@@ -342,6 +342,18 @@ namespace Cpp2IL.Core.Utils
             });
 
             return string.Join("\n", stack);
+        }
+
+        /// <summary>
+        /// Returns the input string with any invalid path characters removed.
+        /// </summary>
+        /// <param name="input">The string to clean up</param>
+        /// <returns>The input string with any characters that are invalid in the NTFS file system replaced with underscores, and additionally escaped if they collide with legacy dos device names.</returns>
+        public static string CleanPathElement(string input)
+        {
+            InvalidPathChars.ForEach(c => input = input.Replace(c, '_'));
+
+            return InvalidPathElements.Contains(input) ? $"__invalidwin32name_{input}__" : input;
         }
     }
 }
