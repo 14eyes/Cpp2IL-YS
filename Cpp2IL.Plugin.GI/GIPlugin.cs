@@ -14,7 +14,7 @@ namespace Cpp2IL.Plugin.GI;
 public class GIPlugin : Cpp2IlPlugin
 {
     public override string Name => "Genshin Impact Plugin";
-    public override string Description => "Provides support for loading Genshin Impact and decrypting the metadata files.";
+    public override string Description => "Provides support for loading Genshin Impact and decrypting the global-metadata file.";
     public override void OnLoad()
     {
         //No-op
