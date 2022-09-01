@@ -2,87 +2,99 @@ namespace LibCpp2IL.Metadata
 {
     public class Il2CppGlobalMetadataHeader
     {
-        public uint magicNumber;
-        public int version;
-        public int stringLiteralOffset; // string data for managed code
-        public int stringLiteralCount;
+        //magicNumber
+//public int version;
+        public int filler00;
+        public int filler04;
+        public int filler08;
+        public int filler0C;
+        public int filler10;
+        public int filler14;
         public int stringLiteralDataOffset;
         public int stringLiteralDataCount;
-        public int stringOffset; // string data for metadata
-        public int stringCount;
-        public int eventsOffset; // Il2CppEventDefinition
-        public int eventsCount;
-        public int propertiesOffset; // Il2CppPropertyDefinition
-        public int propertiesCount;
-        public int methodsOffset; // Il2CppMethodDefinition
-        public int methodsCount;
-        public int parameterDefaultValuesOffset; // Il2CppParameterDefaultValue
-        public int parameterDefaultValuesCount;
-        public int fieldDefaultValuesOffset; // Il2CppFieldDefaultValue
-        public int fieldDefaultValuesCount;
-        public int fieldAndParameterDefaultValueDataOffset; // uint8_t
-        public int fieldAndParameterDefaultValueDataCount;
-        public int fieldMarshaledSizesOffset; // Il2CppFieldMarshaledSize
-        public int fieldMarshaledSizesCount;
-        public int parametersOffset; // Il2CppParameterDefinition
-        public int parametersCount;
-        public int fieldsOffset; // Il2CppFieldDefinition
-        public int fieldsCount;
-        public int genericParametersOffset; // Il2CppGenericParameter
-        public int genericParametersCount;
-        public int genericParameterConstraintsOffset; // TypeIndex
-        public int genericParameterConstraintsCount;
-        public int genericContainersOffset; // Il2CppGenericContainer
+        public int stringLiteralOffset;
+        public int stringLiteralCount;
+        public int genericContainersOffset;
         public int genericContainersCount;
-        public int nestedTypesOffset; // TypeDefinitionIndex
+        public int nestedTypesOffset;
         public int nestedTypesCount;
-        public int interfacesOffset; // TypeIndex
+        public int interfacesOffset;
         public int interfacesCount;
-        public int vtableMethodsOffset; // EncodedMethodIndex
+        public int vtableMethodsOffset;
         public int vtableMethodsCount;
-        public int interfaceOffsetsOffset; // Il2CppInterfaceOffsetPair
+        public int interfaceOffsetsOffset;
         public int interfaceOffsetsCount;
-        public int typeDefinitionsOffset; // Il2CppTypeDefinition
+        public int typeDefinitionsOffset;
         public int typeDefinitionsCount;
-        [Version(Max = 24.15f)] public int rgctxEntriesOffset; // Il2CppRGCTXDefinition
-        [Version(Max = 24.15f)] public int rgctxEntriesCount;
-        public int imagesOffset; // Il2CppImageDefinition
+        [Version(Max = 24)] public int rgctxEntriesOffset;
+        [Version(Max = 24)] public int rgctxEntriesCount;
+        public int filler58;
+        public int filler5C;
+        public int filler60;
+        public int filler64;
+        public int filler68;
+        public int filler6C;
+        public int imagesOffset;
         public int imagesCount;
-        public int assembliesOffset; // Il2CppAssemblyDefinition
+        public int assembliesOffset;
         public int assembliesCount;
-        [Version(Max=24.5f)] public int metadataUsageListsOffset; // Il2CppMetadataUsageList, Removed in v27
-        [Version(Max=24.5f)] public int metadataUsageListsCount; //Removed in v27
-        [Version(Max=24.5f)] public int metadataUsagePairsOffset; // Il2CppMetadataUsagePair, Removed in v27
-        [Version(Max=24.5f)] public int metadataUsagePairsCount; //Removed in v27
-        public int fieldRefsOffset; // Il2CppFieldRef
-        public int fieldRefsCount;
-        public int referencedAssembliesOffset; // int32_t
+        public int fieldsOffset;
+        public int fieldsCount;
+        public int genericParametersOffset;
+        public int genericParametersCount;
+        public int fieldAndParameterDefaultValueDataOffset;
+        public int fieldAndParameterDefaultValueDataCount;
+        public int fieldMarshaledSizesOffset;
+        public int fieldMarshaledSizesCount;
+        public int referencedAssembliesOffset;
         public int referencedAssembliesCount;
-        
-        //Pre-29 attribute data
-        [Version(Max=27.1f)]public int attributesInfoOffset; // Il2CppCustomAttributeTypeRange
-        [Version(Max=27.1f)]public int attributesInfoCount;
-        [Version(Max=27.1f)] public int attributeTypesOffset; // TypeIndex
-        [Version(Max=27.1f)] public int attributeTypesCount;
-        
-        //Post-29 attribute data
         [Version(Min = 27.1f)] public int attributeDataOffset; //uint8_t
         [Version(Min = 27.1f)] public int attributeDataCount;
         [Version(Min = 27.1f)] public int attributeDataRangeOffset; //Il2CppCustomAttributeDataRange
         [Version(Min = 27.1f)] public int attributeDataRangeCount; 
-        public int unresolvedVirtualCallParameterTypesOffset; // TypeIndex
+        public int attributesInfoOffset;
+        public int attributesInfoCount;
+        public int attributeTypesOffset;
+        public int attributeTypesCount;
+        public int unresolvedVirtualCallParameterTypesOffset;
         public int unresolvedVirtualCallParameterTypesCount;
-        public int unresolvedVirtualCallParameterRangesOffset; // Il2CppRange
+        public int unresolvedVirtualCallParameterRangesOffset;
         public int unresolvedVirtualCallParameterRangesCount;
-        public int windowsRuntimeTypeNamesOffset; // Il2CppWindowsRuntimeTypeNamePair
+        public int windowsRuntimeTypeNamesOffset;
         public int windowsRuntimeTypeNamesSize;
-        
-        [Version(Min = 27)]
-        public int windowsRuntimeStringsOffset; // const char*
-        [Version(Min = 27)]
-        public int windowsRuntimeStringsSize;
-        
-        public int exportedTypeDefinitionsOffset; // TypeDefinitionIndex
+        public int exportedTypeDefinitionsOffset;
         public int exportedTypeDefinitionsCount;
+        public int stringOffset;
+        public int stringCount;
+        public int parametersOffset;
+        public int parametersCount;
+        public int genericParameterConstraintsOffset;
+        public int genericParameterConstraintsCount;
+        public int fillerF0;
+        public int fillerF4;
+        public int metadataUsagePairsOffset;
+        public int metadataUsagePairsCount;
+        public int filler100;
+        public int filler104;
+        public int filler108;
+        public int filler10C;
+        public int fieldRefsOffset;
+        public int fieldRefsCount;
+        public int eventsOffset;
+        public int eventsCount;
+        public int propertiesOffset;
+        public int propertiesCount;
+        public int methodsOffset;
+        public int methodsCount;
+        public int parameterDefaultValuesOffset;
+        public int parameterDefaultValuesCount;
+        public int fieldDefaultValuesOffset;
+        public int fieldDefaultValuesCount;
+        public int filler140;
+        public int filler144;
+        public int filler148;
+        public int filler14C;
+        public int metadataUsageListsOffset;
+        public int metadataUsageListsCount;
     }
 }

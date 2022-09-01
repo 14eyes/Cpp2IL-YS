@@ -250,7 +250,23 @@ namespace LibCpp2IL
 
             return success;
         }
+        public ulong FindMetadataUsagesGenshin()
+        {
+            var ptrSize = _binary.is32Bit ? 4ul : 8ul;
 
+            var bytesToSubtract = 80 - ptrSize * 4;
+
+            var potentialStringLiteralPointers = MapOffsetsToVirt(FindAllBytes(BitConverter.GetBytes(LibCpp2IlMain.TheMetadata!.stringLiterals.Length), 1)).ToList();
+
+            LibLogger.VerboseNewline($"\t\t\tFound {potentialStringLiteralPointers.Count} instances of the number of string literals, {LibCpp2IlMain.TheMetadata!.stringLiterals.Length}");
+
+            potentialStringLiteralPointers = potentialStringLiteralPointers.Select(p => p - bytesToSubtract).ToList();
+            var res = potentialStringLiteralPointers.Where(p => LibCpp2IlMain.Binary!.ReadClassAtVirtualAddress<uint>(p + 32) == LibCpp2IlMain.TheMetadata!.fieldRefs.Length).ToList();
+            if (res.Count() == 1)
+                return res.First();
+            else
+            return potentialStringLiteralPointers.Last();//I am too lazy to bother with this
+        }
         public ulong FindMetadataRegistrationPre24_5()
         {
             //We're looking for TypeDefinitionsSizesCount, which is the 4th-to-last field

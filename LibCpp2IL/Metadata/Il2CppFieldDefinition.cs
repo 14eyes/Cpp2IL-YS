@@ -6,9 +6,9 @@ namespace LibCpp2IL.Metadata
 {
     public class Il2CppFieldDefinition
     {
-        public int nameIndex;
-        public int typeIndex;
         [Version(Max = 24)] public int customAttributeIndex;
+        public int typeIndex;
+        public int nameIndex;
         public uint token;
         
         public string? Name => LibCpp2IlMain.TheMetadata == null ? null : LibCpp2IlMain.TheMetadata.GetStringFromIndex(nameIndex);

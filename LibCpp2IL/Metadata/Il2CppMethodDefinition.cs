@@ -10,22 +10,24 @@ namespace LibCpp2IL.Metadata
 {
     public class Il2CppMethodDefinition
     {
-        public int nameIndex;
-        public int declaringTypeIdx;
         public int returnTypeIdx;
+        public int declaringTypeIdx;
+        public int filler08;
+        public int nameIndex;
         public int parameterStart;
-        [Version(Max = 24)] public int customAttributeIndex;
         public int genericContainerIndex;
+        [Version(Max = 24)] public int customAttributeIndex;
+        public int filler20;
         [Version(Max = 24.15f)] public int methodIndex;
         [Version(Max = 24.15f)] public int invokerIndex;
         [Version(Max = 24.15f)] public int delegateWrapperIndex;
         [Version(Max = 24.15f)] public int rgctxStartIndex;
         [Version(Max = 24.15f)] public int rgctxCount;
-        public uint token;
-        public ushort flags;
-        public ushort iflags;
-        public ushort slot;
         public ushort parameterCount;
+        public ushort flags;
+        public ushort slot;
+        public ushort iflags;
+        public uint token;
 
         public MethodAttributes Attributes => (MethodAttributes) flags;
 

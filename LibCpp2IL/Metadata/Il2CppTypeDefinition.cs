@@ -28,22 +28,23 @@ namespace LibCpp2IL.Metadata
         public uint flags;
 
         public int firstFieldIdx;
+        public int firstPropertyId;
         public int firstMethodIdx;
         public int firstEventId;
-        public int firstPropertyId;
         public int nestedTypesStart;
         public int interfacesStart;
-        public int vtableStart;
         public int interfaceOffsetsStart;
+        public int vtableStart;
 
+
+        public ushort eventCount;
         public ushort method_count;
         public ushort propertyCount;
         public ushort field_count;
-        public ushort eventCount;
-        public ushort nested_type_count;
         public ushort vtable_count;
         public ushort interfaces_count;
         public ushort interface_offsets_count;
+        public ushort nested_type_count;
 
         // bitfield to portably encode boolean values as single bits
         // 01 - valuetype;

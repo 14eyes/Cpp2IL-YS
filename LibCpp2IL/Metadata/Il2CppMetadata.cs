@@ -27,7 +27,7 @@ namespace LibCpp2IL.Metadata
         private Il2CppParameterDefaultValue[] parameterDefaultValues;
         public Il2CppPropertyDefinition[] propertyDefs;
         public Il2CppCustomAttributeTypeRange[] attributeTypeRanges; //Pre-29
-        private Il2CppStringLiteral[] stringLiterals;
+        public Il2CppStringLiteral[] stringLiterals;
         public Il2CppMetadataUsageList[] metadataUsageLists;
         private Il2CppMetadataUsagePair[] metadataUsagePairs;
         public Il2CppRGCTXDefinition[] RgctxDefinitions; //Moved to binary in v24.2
@@ -55,13 +55,13 @@ namespace LibCpp2IL.Metadata
 
         public static Il2CppMetadata? ReadFrom(byte[] bytes, int[] unityVer)
         {
-            if (BitConverter.ToUInt32(bytes, 0) != 0xFAB11BAF)
-            {
-                //Magic number is wrong
-                throw new FormatException("Invalid or corrupt metadata (magic number check failed)");
-            }
+            //if (BitConverter.ToUInt32(bytes, 0) != 0xFAB11BAF)
+            //{
+            ////Magic number is wrong
+            //throw new FormatException("Invalid or corrupt metadata (magic number check failed)");
+            //}
 
-            var version = BitConverter.ToInt32(bytes, 4);
+            var version = 24;//BitConverter.ToInt32(bytes, 4);
             if (version is < 24 or > 29)
             {
                 throw new FormatException("Unsupported metadata version found! We support 24-29, got " + version);
@@ -77,7 +77,8 @@ namespace LibCpp2IL.Metadata
                     actualVersion = 27.1f; //2020.2.4 and above is v27.1
                 else
                     actualVersion = version; //2020.2 and above is v27
-            } else if (version == 24)
+            }
+            else if (version == 24)
             {
                 if (unityVersion.IsGreaterEqual(2020, 1, 11))
                     actualVersion = 24.4f; //2020.1.11-17 were released prior to 2019.4.21, so are still on 24.4
@@ -105,19 +106,19 @@ namespace LibCpp2IL.Metadata
             LibLogger.InfoNewline($"\tUsing actual IL2CPP Metadata version {actualVersion}");
 
             LibCpp2IlMain.MetadataVersion = actualVersion;
-
-            return new Il2CppMetadata(new MemoryStream(bytes));
+            var dec = Decrypter.decrypt_global_metadata(bytes, bytes.Length);
+            return new Il2CppMetadata(new MemoryStream(dec));
         }
 
         private Il2CppMetadata(MemoryStream stream) : base(stream)
         {
-            metadataHeader = ReadClassAtRawAddr<Il2CppGlobalMetadataHeader>(-1);
-            if (metadataHeader.magicNumber != 0xFAB11BAF)
-            {
-                throw new Exception("ERROR: Magic number mismatch. Expecting " + 0xFAB11BAF + " but got " + metadataHeader.magicNumber);
-            }
+            metadataHeader = ReadClassAtRawAddr<Il2CppGlobalMetadataHeader>(0);
+            //if (metadataHeader.magicNumber != 0xFAB11BAF)
+            //{
+            //throw new Exception("ERROR: Magic number mismatch. Expecting " + 0xFAB11BAF + " but got " + metadataHeader.magicNumber);
+            //}
 
-            if (metadataHeader.version < 24) throw new Exception("ERROR: Invalid metadata version, we only support v24+, this metadata is using v" + metadataHeader.version);
+            //if (metadataHeader.version < 24) throw new Exception("ERROR: Invalid metadata version, we only support v24+, this metadata is using v" + metadataHeader.version);
 
             LibLogger.Verbose("\tReading image definitions...");
             var start = DateTime.Now;
@@ -278,13 +279,13 @@ namespace LibCpp2IL.Metadata
         private void DecipherGenshinMetadataUsage()
         {
             var metadataUsagesCount = metadataUsagePairs.Length;
-            for (int i = 0; i < metadataUsagesCount; i++)
+            foreach (var metadataUsagePair in metadataUsagePairs)
             {
-                var metadataUsagePair = metadataUsagePairs[i];
                 var usage = GetEncodedIndexType(metadataUsagePair.encodedSourceIndex);
                 var decodedIndex = GetDecodedMethodIndex(metadataUsagePair.encodedSourceIndex);
                 metadataUsageDic[usage][metadataUsagePair.destinationIndex] = decodedIndex;
             }
+            maxMetadataUsages = metadataUsageDic.Max(x => x.Value.Select(y => y.Key).DefaultIfEmpty().Max()) + 1;
         }
 
         private void DecipherMetadataUsage()

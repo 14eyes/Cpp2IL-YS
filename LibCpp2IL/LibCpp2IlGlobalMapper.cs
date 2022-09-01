@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using LibCpp2IL.BinaryStructures;
 using LibCpp2IL.Metadata;
 
 namespace LibCpp2IL
@@ -30,7 +31,9 @@ namespace LibCpp2IL
 
         internal static void MapGlobalIdentifiers(Il2CppMetadata metadata, Il2CppBinary cppAssembly)
         {
-            if(LibCpp2IlMain.MetadataVersion < 27f && LibCpp2IlMain.MetadataVersion != 24.5f)
+            if (LibCpp2IlMain.MetadataVersion == 24.5f)
+                MapGlobalIdentifiersGenshin(metadata, cppAssembly);
+            else if (LibCpp2IlMain.MetadataVersion < 27f)
                 MapGlobalIdentifiersPre27(metadata, cppAssembly);
             else
                 MapGlobalIdentifiersPost27(metadata, cppAssembly);
@@ -40,7 +43,59 @@ namespace LibCpp2IL
         {
             //No-op
         }
+        private static void MapGlobalIdentifiersGenshin(Il2CppMetadata metadata, Il2CppBinary cppAssembly)
+        {
+            //Type 1 => TypeInfo
+            //Type 2 => Il2CppType
+            //Type 3 => MethodDef
+            //Type 4 => FieldInfo
+            //Type 5 => StringLiteral
+            //Type 6 => MethodRef
+            var Searcher = new BinarySearcher(cppAssembly, metadata.methodDefs.Count(x => x.methodIndex >= 0), metadata.typeDefs.Length);
+            var usages = cppAssembly.ReadClassAtVirtualAddress<Il2CppMihoyoUsages>(Searcher.FindMetadataUsagesGenshin());
 
+            //Type references
+            TypeRefs = metadata.metadataUsageDic![(uint)MetadataUsageType.TypeInfo]
+                .Select(kvp => new MetadataUsage(MetadataUsageType.Type, usages.typeInfoUsage + kvp.Key * 8, kvp.Value))
+                .ToList();
+
+            //More type references
+            //TypeRefs.AddRange(metadata.metadataUsageDic[(uint)MetadataUsageType.Type]
+            //    .Select(kvp => new MetadataUsage(MetadataUsageType.Type, cppAssembly.GetRawMetadataUsage(kvp.Key), kvp.Value))
+            //);
+
+            //Method references
+            MethodRefs = metadata.metadataUsageDic[(uint)MetadataUsageType.MethodDef]
+                .Select(kvp => new MetadataUsage(MetadataUsageType.MethodDef, usages.methodDefRefUsage + kvp.Key * 8, kvp.Value))
+                .ToList();
+
+            //Field references
+            FieldRefs = metadata.metadataUsageDic[(uint)MetadataUsageType.FieldInfo]
+                .Select(kvp => new MetadataUsage(MetadataUsageType.FieldInfo, usages.fieldInfoUsage + kvp.Key * 8, kvp.Value))
+                .ToList();
+
+            //Literals
+            Literals = metadata.metadataUsageDic[(uint)MetadataUsageType.StringLiteral]
+                .Select(kvp => new MetadataUsage(MetadataUsageType.StringLiteral, usages.stringLiteralUsage + kvp.Key * 8, kvp.Value)).ToList();
+
+            //Generic method references
+            foreach (var (metadataUsageIdx, methodSpecIdx) in metadata.metadataUsageDic[(uint)MetadataUsageType.MethodRef]) //kIl2CppMetadataUsageMethodRef
+            {
+                MethodRefs.Add(new MetadataUsage(MetadataUsageType.MethodRef, usages.methodDefRefUsage + metadataUsageIdx * 8, methodSpecIdx));
+            }
+
+            foreach (var globalIdentifier in TypeRefs)
+                TypeRefsByAddress[globalIdentifier.Offset] = globalIdentifier;
+
+            foreach (var globalIdentifier in MethodRefs)
+                MethodRefsByAddress[globalIdentifier.Offset] = globalIdentifier;
+
+            foreach (var globalIdentifier in FieldRefs)
+                FieldRefsByAddress[globalIdentifier.Offset] = globalIdentifier;
+
+            foreach (var globalIdentifier in Literals)
+                LiteralsByAddress[globalIdentifier.Offset] = globalIdentifier;
+        }
         private static void MapGlobalIdentifiersPre27(Il2CppMetadata metadata, Il2CppBinary cppAssembly)
         {
             //Type 1 => TypeInfo
@@ -49,47 +104,47 @@ namespace LibCpp2IL
             //Type 4 => FieldInfo
             //Type 5 => StringLiteral
             //Type 6 => MethodRef
-            
+
             //Type references
-            TypeRefs = metadata.metadataUsageDic[(uint) MetadataUsageType.TypeInfo]
+            TypeRefs = metadata.metadataUsageDic[(uint)MetadataUsageType.TypeInfo]
                 .Select(kvp => new MetadataUsage(MetadataUsageType.Type, cppAssembly.GetRawMetadataUsage(kvp.Key), kvp.Value))
                 .ToList();
 
             //More type references
-            TypeRefs.AddRange(metadata.metadataUsageDic[(uint) MetadataUsageType.Type]
+            TypeRefs.AddRange(metadata.metadataUsageDic[(uint)MetadataUsageType.Type]
                 .Select(kvp => new MetadataUsage(MetadataUsageType.Type, cppAssembly.GetRawMetadataUsage(kvp.Key), kvp.Value))
             );
 
             //Method references
-            MethodRefs = metadata.metadataUsageDic[(uint) MetadataUsageType.MethodDef]
+            MethodRefs = metadata.metadataUsageDic[(uint)MetadataUsageType.MethodDef]
                 .Select(kvp => new MetadataUsage(MetadataUsageType.MethodDef, cppAssembly.GetRawMetadataUsage(kvp.Key), kvp.Value))
                 .ToList();
 
             //Field references
-            FieldRefs = metadata.metadataUsageDic[(uint) MetadataUsageType.FieldInfo]
+            FieldRefs = metadata.metadataUsageDic[(uint)MetadataUsageType.FieldInfo]
                 .Select(kvp => new MetadataUsage(MetadataUsageType.FieldInfo, cppAssembly.GetRawMetadataUsage(kvp.Key), kvp.Value))
                 .ToList();
 
             //Literals
-            Literals = metadata.metadataUsageDic[(uint) MetadataUsageType.StringLiteral]
+            Literals = metadata.metadataUsageDic[(uint)MetadataUsageType.StringLiteral]
                 .Select(kvp => new MetadataUsage(MetadataUsageType.StringLiteral, cppAssembly.GetRawMetadataUsage(kvp.Key), kvp.Value)).ToList();
 
             //Generic method references
-            foreach (var (metadataUsageIdx, methodSpecIdx) in metadata.metadataUsageDic[(uint) MetadataUsageType.MethodRef]) //kIl2CppMetadataUsageMethodRef
+            foreach (var (metadataUsageIdx, methodSpecIdx) in metadata.metadataUsageDic[(uint)MetadataUsageType.MethodRef]) //kIl2CppMetadataUsageMethodRef
             {
                 MethodRefs.Add(new MetadataUsage(MetadataUsageType.MethodRef, cppAssembly.GetRawMetadataUsage(metadataUsageIdx), methodSpecIdx));
             }
-            
-            foreach (var globalIdentifier in TypeRefs) 
+
+            foreach (var globalIdentifier in TypeRefs)
                 TypeRefsByAddress[globalIdentifier.Offset] = globalIdentifier;
-            
-            foreach (var globalIdentifier in MethodRefs) 
+
+            foreach (var globalIdentifier in MethodRefs)
                 MethodRefsByAddress[globalIdentifier.Offset] = globalIdentifier;
-            
-            foreach (var globalIdentifier in FieldRefs) 
+
+            foreach (var globalIdentifier in FieldRefs)
                 FieldRefsByAddress[globalIdentifier.Offset] = globalIdentifier;
-            
-            foreach (var globalIdentifier in Literals) 
+
+            foreach (var globalIdentifier in Literals)
                 LiteralsByAddress[globalIdentifier.Offset] = globalIdentifier;
         }
 
@@ -97,13 +152,13 @@ namespace LibCpp2IL
         {
             if (!LibCpp2IlMain.Binary!.TryMapVirtualAddressToRaw(address, out var raw) || raw >= LibCpp2IlMain.Binary.RawLength)
                 return null;
-            
+
             var encoded = LibCpp2IlMain.Binary.ReadClassAtVirtualAddress<ulong>(address);
             var metadataUsage = MetadataUsage.DecodeMetadataUsage(encoded, address);
 
             if (metadataUsage?.IsValid != true)
                 return null;
-            
+
             return metadataUsage;
         }
     }
